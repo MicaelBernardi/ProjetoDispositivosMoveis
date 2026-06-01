@@ -318,16 +318,18 @@ class _ServicoScreenState extends State<ServicoScreen> {
                             const SizedBox(width: 10),
 
                             ElevatedButton.icon(
-                              onPressed: servicoEditando?.id == servico.id
-                                  ? null
-                                  : () {
-                                      confirmarExclusao(servico);
-                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
+
+                              onPressed: () {
+                                confirmarExclusao(servico);
+                              },
 
                               icon: const Icon(Icons.delete),
-
                               label: const Text('Excluir'),
-                            ),
+                            )
                           ],
                         ),
                       ],

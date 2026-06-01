@@ -8,8 +8,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Sistema de Agendamento',
+      title: 'Sistema de Agendamentos',
+
+      theme: ThemeData(
+
+        primarySwatch: Colors.blue,
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+          elevation: 4,
+        ),
+
+        elevatedButtonTheme:
+        ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ),
+
       home: LoginScreen(),
     );
   }

@@ -177,6 +177,7 @@ class _ClienteScreenState extends State<ClienteScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Clientes')),
 
+
       body: Padding(
         padding: const EdgeInsets.all(16),
 
@@ -328,16 +329,18 @@ class _ClienteScreenState extends State<ClienteScreen> {
                             const SizedBox(width: 10),
 
                             ElevatedButton.icon(
-                              onPressed: clienteEditando?.id == cliente.id
-                                  ? null
-                                  : () {
-                                      confirmarExclusao(cliente);
-                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
+
+                              onPressed: () {
+                                confirmarExclusao(cliente);
+                              },
 
                               icon: const Icon(Icons.delete),
-
                               label: const Text('Excluir'),
-                            ),
+                            )
                           ],
                         ),
                       ],

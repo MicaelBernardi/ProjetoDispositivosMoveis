@@ -403,14 +403,16 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
                               ),
 
                               ElevatedButton.icon(
-                                onPressed: agendamentoEditando?.id == a.id
-                                    ? null
-                                    : () {
-                                        confirmarExclusao(a);
-                                      },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                ),
+
+                                onPressed: () {
+                                  confirmarExclusao(a);
+                                },
 
                                 icon: const Icon(Icons.delete),
-
                                 label: const Text('Excluir'),
                               ),
                             ],

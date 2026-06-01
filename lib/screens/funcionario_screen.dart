@@ -312,17 +312,18 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
                             const SizedBox(width: 10),
 
                             ElevatedButton.icon(
-                              onPressed:
-                                  funcionarioEditando?.id == funcionario.id
-                                  ? null
-                                  : () {
-                                      confirmarExclusao(funcionario);
-                                    },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                              ),
+
+                              onPressed: () {
+                                confirmarExclusao(funcionario);
+                              },
 
                               icon: const Icon(Icons.delete),
-
                               label: const Text('Excluir'),
-                            ),
+                            )
                           ],
                         ),
                       ],
