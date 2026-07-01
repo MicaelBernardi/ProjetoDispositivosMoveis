@@ -13,7 +13,7 @@ class Servico {
     return Servico(
       id: map['id'],
       descricao: map['descricao'],
-      valor: map['valor'].toDouble(),
+      valor: (map['valor'] as num).toDouble(),
     );
   }
 }

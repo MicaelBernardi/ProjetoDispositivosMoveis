@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 
-import '../core/dao/agendamento_dao.dart';
-import '../core/dao/cliente_dao.dart';
 import '../core/models/cliente.dart';
+import '../core/services/agendamento_service.dart';
+import '../core/services/cliente_service.dart';
 
 class ClienteScreen extends StatefulWidget {
   const ClienteScreen({super.key});
@@ -21,9 +21,9 @@ class _ClienteScreenState extends State<ClienteScreen> {
 
   final telefoneController = TextEditingController();
 
-  final ClienteDAO _clienteDAO = ClienteDAO();
+  final ClienteService _clienteService = ClienteService();
 
-  final AgendamentoDAO _agendamentoDAO = AgendamentoDAO();
+  final AgendamentoService _agendamentoService = AgendamentoService();
 
   final cpfMask = MaskTextInputFormatter(
     mask: '###.###.###-##',
@@ -46,13 +46,14 @@ class _ClienteScreenState extends State<ClienteScreen> {
   }
 
   Future<bool> clientePossuiAgendamento(int clienteId) async {
-    final agendamentos = await _agendamentoDAO.findAllAgendamentos();
+    final agendamentos = await _agendamentoService.getAgendamentos();
 
-    return agendamentos.any((a) => a.clienteId == clienteId);
+    return agendamentos.any((a) => a.cliente.id == clienteId);
   }
 
   Future<void> carregarClientes() async {
-    final lista = await _clienteDAO.findAllClientes();
+    final lista = await _clienteService.getClientes();
+    ;
 
     setState(() {
       clientes = lista;
@@ -65,7 +66,7 @@ class _ClienteScreenState extends State<ClienteScreen> {
     }
 
     if (clienteEditando == null) {
-      await _clienteDAO.insertCliente(
+      await _clienteService.salvarCliente(
         Cliente(
           nome: nomeController.text,
           cpf: cpfController.text,
@@ -73,7 +74,7 @@ class _ClienteScreenState extends State<ClienteScreen> {
         ),
       );
     } else {
-      await _clienteDAO.updateCliente(
+      await _clienteService.atualizarCliente(
         Cliente(
           id: clienteEditando!.id,
           nome: nomeController.text,
@@ -121,7 +122,7 @@ class _ClienteScreenState extends State<ClienteScreen> {
       limparCampos();
     }
 
-    await _clienteDAO.deleteCliente(id);
+    await _clienteService.excluirCliente(id);
 
     await carregarClientes();
   }
@@ -176,7 +177,6 @@ class _ClienteScreenState extends State<ClienteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Clientes')),
-
 
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -340,7 +340,7 @@ class _ClienteScreenState extends State<ClienteScreen> {
 
                               icon: const Icon(Icons.delete),
                               label: const Text('Excluir'),
-                            )
+                            ),
                           ],
                         ),
                       ],

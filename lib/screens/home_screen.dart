@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/authentication/auth_service.dart';
 import 'agendamento_screen.dart';
 import 'cliente_screen.dart';
 import 'funcionario_screen.dart';
@@ -11,68 +12,43 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
       appBar: AppBar(
-        title: const Text(
-          'Sistema de Agendamentos',
-        ),
+        title: const Text('Sistema de Agendamentos'),
 
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
         centerTitle: true,
 
         actions: [
-
           IconButton(
-            icon: const Icon(
-              Icons.logout,
-            ),
+            icon: const Icon(Icons.logout),
 
             onPressed: () async {
-
-              final sair =
-              await showDialog<bool>(
+              final sair = await showDialog<bool>(
                 context: context,
 
                 builder: (context) {
-
                   return AlertDialog(
-                    title: const Text(
-                      'Sair',
-                    ),
+                    title: const Text('Sair'),
 
-                    content: const Text(
-                      'Deseja encerrar a sessão?',
-                    ),
+                    content: const Text('Deseja encerrar a sessão?'),
 
                     actions: [
-
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(
-                            context,
-                            false,
-                          );
+                          Navigator.pop(context, false);
                         },
 
-                        child: const Text(
-                          'Cancelar',
-                        ),
+                        child: const Text('Cancelar'),
                       ),
 
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(
-                            context,
-                            true,
-                          );
+                          Navigator.pop(context, true);
                         },
 
-                        child: const Text(
-                          'Sair',
-                        ),
+                        child: const Text('Sair'),
                       ),
                     ],
                   );
@@ -80,16 +56,16 @@ class HomeScreen extends StatelessWidget {
               );
 
               if (sair == true) {
+                await AuthService().logout();
+
+                if (!context.mounted) return;
 
                 Navigator.pushAndRemoveUntil(
                   context,
 
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        LoginScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => LoginScreen()),
 
-                      (route) => false,
+                  (route) => false,
                 );
               }
             },
@@ -102,13 +78,11 @@ class HomeScreen extends StatelessWidget {
 
         child: ListView(
           children: [
-
             _menuCard(
               context,
               icon: Icons.fact_check,
               titulo: 'Lista de agendamentos',
-              descricao:
-              'Consulte e crie novos agendamentos',
+              descricao: 'Consulte e crie novos agendamentos',
               tela: const AgendamentoScreen(),
             ),
 
@@ -118,8 +92,7 @@ class HomeScreen extends StatelessWidget {
               context,
               icon: Icons.person_add_alt_1,
               titulo: 'Cadastro de clientes',
-              descricao:
-              'Adicione e gerencie os dados dos clientes',
+              descricao: 'Adicione e gerencie os dados dos clientes',
               tela: const ClienteScreen(),
             ),
 
@@ -129,8 +102,7 @@ class HomeScreen extends StatelessWidget {
               context,
               icon: Icons.build,
               titulo: 'Serviços oferecidos',
-              descricao:
-              'Configure os tipos de serviços disponíveis',
+              descricao: 'Configure os tipos de serviços disponíveis',
               tela: const ServicoScreen(),
             ),
 
@@ -140,8 +112,7 @@ class HomeScreen extends StatelessWidget {
               context,
               icon: Icons.groups,
               titulo: 'Cadastro de funcionários',
-              descricao:
-              'Inclua e edite responsáveis pelos agendamentos',
+              descricao: 'Inclua e edite responsáveis pelos agendamentos',
               tela: const FuncionarioScreen(),
             ),
           ],
@@ -151,22 +122,18 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _menuCard(
-      BuildContext context, {
-        required IconData icon,
-        required String titulo,
-        required String descricao,
-        required Widget tela,
-      }) {
-
+    BuildContext context, {
+    required IconData icon,
+    required String titulo,
+    required String descricao,
+    required Widget tela,
+  }) {
     return Card(
       elevation: 4,
 
       color: Colors.blue.shade200,
 
-      shape: RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.circular(8),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
 
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
@@ -175,59 +142,35 @@ class HomeScreen extends StatelessWidget {
         highlightColor: Colors.white10,
 
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => tela,
-            ),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => tela));
         },
 
         child: Padding(
-          padding:
-          const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
 
           child: Row(
             children: [
-
-              Icon(
-                icon,
-                size: 55,
-                color: Colors.white,
-              ),
+              Icon(icon, size: 55, color: Colors.white),
 
               const SizedBox(width: 16),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
                     Text(
                       titulo,
 
-                      style:
-                      const TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
-                        fontWeight:
-                        FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 8,
-                    ),
+                    const SizedBox(height: 8),
 
-                    Text(
-                      descricao,
-
-                      style:
-                      const TextStyle(
-                        fontSize: 15,
-                      ),
-                    ),
+                    Text(descricao, style: const TextStyle(fontSize: 15)),
                   ],
                 ),
               ),

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../core/dao/agendamento_dao.dart';
-import '../core/dao/servico_dao.dart';
 import '../core/models/servico.dart';
+import '../core/services/agendamento_service.dart';
+import '../core/services/servico_service.dart';
 
 class ServicoScreen extends StatefulWidget {
   const ServicoScreen({super.key});
@@ -19,9 +19,9 @@ class _ServicoScreenState extends State<ServicoScreen> {
 
   final valorController = TextEditingController();
 
-  final ServicoDAO _servicoDAO = ServicoDAO();
+  final ServicoService _servicoService = ServicoService();
 
-  final AgendamentoDAO _agendamentoDAO = AgendamentoDAO();
+  final AgendamentoService _agendamentoService = AgendamentoService();
 
   List<Servico> servicos = [];
 
@@ -34,13 +34,13 @@ class _ServicoScreenState extends State<ServicoScreen> {
   }
 
   Future<bool> servicoPossuiAgendamento(int servicoId) async {
-    final agendamentos = await _agendamentoDAO.findAllAgendamentos();
+    final agendamentos = await _agendamentoService.getAgendamentos();
 
-    return agendamentos.any((a) => a.servicoId == servicoId);
+    return agendamentos.any((a) => a.servico.id == servicoId);
   }
 
   Future<void> carregarServicos() async {
-    final lista = await _servicoDAO.findAllServicos();
+    final lista = await _servicoService.getServicos();
 
     setState(() {
       servicos = lista;
@@ -57,11 +57,11 @@ class _ServicoScreenState extends State<ServicoScreen> {
     }
 
     if (servicoEditando == null) {
-      await _servicoDAO.insertServico(
+      await _servicoService.salvarServico(
         Servico(descricao: descricaoController.text, valor: converterValor()),
       );
     } else {
-      await _servicoDAO.updateServico(
+      await _servicoService.atualizarServico(
         Servico(
           id: servicoEditando!.id,
           descricao: descricaoController.text,
@@ -88,9 +88,7 @@ class _ServicoScreenState extends State<ServicoScreen> {
   }
 
   Future<void> excluirServico(int id) async {
-    final agendamentos = await _agendamentoDAO.findAllAgendamentos();
-
-    final possuiAgendamento = agendamentos.any((a) => a.servicoId == id);
+    final possuiAgendamento = await servicoPossuiAgendamento(id);
 
     if (possuiAgendamento) {
       if (!mounted) return;
@@ -110,7 +108,7 @@ class _ServicoScreenState extends State<ServicoScreen> {
       limparCampos();
     }
 
-    await _servicoDAO.deleteServico(id);
+    await _servicoService.excluirServico(id);
 
     await carregarServicos();
   }
@@ -329,7 +327,7 @@ class _ServicoScreenState extends State<ServicoScreen> {
 
                               icon: const Icon(Icons.delete),
                               label: const Text('Excluir'),
-                            )
+                            ),
                           ],
                         ),
                       ],

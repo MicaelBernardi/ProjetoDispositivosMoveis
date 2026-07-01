@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../core/dao/agendamento_dao.dart';
-import '../core/dao/cliente_dao.dart';
-import '../core/dao/funcionario_dao.dart';
-import '../core/dao/servico_dao.dart';
-
 import '../core/models/agendamento.dart';
 import '../core/models/cliente.dart';
 import '../core/models/funcionario.dart';
 import '../core/models/servico.dart';
+import '../core/services/agendamento_service.dart';
+import '../core/services/cliente_service.dart';
+import '../core/services/funcionario_service.dart';
+import '../core/services/servico_service.dart';
 
 class AgendamentoScreen extends StatefulWidget {
   const AgendamentoScreen({super.key});
@@ -20,13 +19,13 @@ class AgendamentoScreen extends StatefulWidget {
 class _AgendamentoScreenState extends State<AgendamentoScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final AgendamentoDAO _agendamentoDAO = AgendamentoDAO();
+  final AgendamentoService _agendamentoService = AgendamentoService();
 
-  final ClienteDAO _clienteDAO = ClienteDAO();
+  final ClienteService _clienteService = ClienteService();
 
-  final FuncionarioDAO _funcionarioDAO = FuncionarioDAO();
+  final FuncionarioService _funcionarioService = FuncionarioService();
 
-  final ServicoDAO _servicoDAO = ServicoDAO();
+  final ServicoService _servicoService = ServicoService();
 
   List<Agendamento> agendamentos = [];
 
@@ -59,7 +58,7 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
           title: const Text('Confirmar exclusão'),
 
           content: Text(
-            'Deseja realmente excluir o agendamento de ${getNomeCliente(agendamento.clienteId)}?',
+            'Deseja realmente excluir o agendamento de ${agendamento.cliente.nome}?',
           ),
 
           actions: [
@@ -89,28 +88,19 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
   }
 
   Future<void> finalizarAgendamento(Agendamento agendamento) async {
-    final atualizado = Agendamento(
-      id: agendamento.id,
-      data: agendamento.data,
-      status: 'Finalizado',
-      clienteId: agendamento.clienteId,
-      funcionarioId: agendamento.funcionarioId,
-      servicoId: agendamento.servicoId,
-    );
-
-    await _agendamentoDAO.updateAgendamento(atualizado);
+    await _agendamentoService.finalizarAgendamento(agendamento.id!);
 
     await carregarDados();
   }
 
   Future<void> carregarDados() async {
-    clientes = await _clienteDAO.findAllClientes();
+    clientes = await _clienteService.getClientes();
 
-    funcionarios = await _funcionarioDAO.findAllFuncionarios();
+    funcionarios = await _funcionarioService.getFuncionarios();
 
-    servicos = await _servicoDAO.findAllServicos();
+    servicos = await _servicoService.getServicos();
 
-    agendamentos = await _agendamentoDAO.findAllAgendamentos();
+    agendamentos = await _agendamentoService.getAgendamentos();
 
     setState(() {});
   }
@@ -151,15 +141,15 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
       id: agendamentoEditando?.id,
       data: dataSelecionada.toIso8601String(),
       status: status,
-      clienteId: clienteSelecionado!.id!,
-      funcionarioId: funcionarioSelecionado!.id!,
-      servicoId: servicoSelecionado!.id!,
+      cliente: clienteSelecionado!,
+      funcionario: funcionarioSelecionado!,
+      servico: servicoSelecionado!,
     );
 
     if (agendamentoEditando == null) {
-      await _agendamentoDAO.insertAgendamento(agendamento);
+      await _agendamentoService.salvarAgendamento(agendamento);
     } else {
-      await _agendamentoDAO.updateAgendamento(agendamento);
+      await _agendamentoService.atualizarAgendamento(agendamento);
     }
 
     limparFormulario();
@@ -168,22 +158,22 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
   }
 
   Future<void> excluirAgendamento(int id) async {
-    await _agendamentoDAO.deleteAgendamento(id);
+    await _agendamentoService.excluirAgendamento(id);
 
     await carregarDados();
   }
 
   void editarAgendamento(Agendamento agendamento) {
     clienteSelecionado = clientes.firstWhere(
-      (c) => c.id == agendamento.clienteId,
+      (c) => c.id == agendamento.cliente.id,
     );
 
     funcionarioSelecionado = funcionarios.firstWhere(
-      (f) => f.id == agendamento.funcionarioId,
+      (f) => f.id == agendamento.funcionario.id,
     );
 
     servicoSelecionado = servicos.firstWhere(
-      (s) => s.id == agendamento.servicoId,
+      (s) => s.id == agendamento.servico.id,
     );
 
     dataSelecionada = DateTime.parse(agendamento.data);
@@ -207,22 +197,6 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
     agendamentoEditando = null;
 
     setState(() {});
-  }
-
-  String getNomeCliente(int clienteId) {
-    return clientes.firstWhere((c) => c.id == clienteId).nome;
-  }
-
-  String getNomeFuncionario(int funcionarioId) {
-    return funcionarios.firstWhere((f) => f.id == funcionarioId).nome;
-  }
-
-  String getNomeServico(int servicoId) {
-    return servicos.firstWhere((s) => s.id == servicoId).descricao;
-  }
-
-  double getValorServico(int servicoId) {
-    return servicos.firstWhere((s) => s.id == servicoId).valor;
   }
 
   @override
@@ -334,26 +308,22 @@ class _AgendamentoScreenState extends State<AgendamentoScreen> {
 
                   return Card(
                     child: ExpansionTile(
-                      title: Text(getNomeCliente(a.clienteId)),
+                      title: Text(a.cliente.nome),
 
                       subtitle: Text(a.data.split('T').first),
 
                       children: [
                         ListTile(
-                          title: Text(
-                            'Funcionário: ${getNomeFuncionario(a.funcionarioId)}',
-                          ),
+                          title: Text('Funcionário: ${a.funcionario.nome}'),
+                        ),
+
+                        ListTile(
+                          title: Text('Serviço: ${a.servico.descricao}'),
                         ),
 
                         ListTile(
                           title: Text(
-                            'Serviço: ${getNomeServico(a.servicoId)}',
-                          ),
-                        ),
-
-                        ListTile(
-                          title: Text(
-                            'Valor: R\$ ${getValorServico(a.servicoId).toStringAsFixed(2)}',
+                            'Valor: R\$ ${a.servico.valor.toStringAsFixed(2)}',
                           ),
                         ),
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../core/dao/agendamento_dao.dart';
-import '../core/dao/funcionario_dao.dart';
 import '../core/models/funcionario.dart';
+import '../core/services/agendamento_service.dart';
+import '../core/services/funcionario_service.dart';
 
 class FuncionarioScreen extends StatefulWidget {
   const FuncionarioScreen({super.key});
@@ -20,9 +20,9 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
 
   final senhaController = TextEditingController();
 
-  final FuncionarioDAO _funcionarioDAO = FuncionarioDAO();
+  final FuncionarioService _funcionarioService = FuncionarioService();
 
-  final AgendamentoDAO _agendamentoDAO = AgendamentoDAO();
+  final AgendamentoService _agendamentoService = AgendamentoService();
 
   List<Funcionario> funcionarios = [];
 
@@ -35,13 +35,13 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
   }
 
   Future<bool> funcionarioPossuiAgendamento(int funcionarioId) async {
-    final agendamentos = await _agendamentoDAO.findAllAgendamentos();
+    final agendamentos = await _agendamentoService.getAgendamentos();
 
-    return agendamentos.any((a) => a.funcionarioId == funcionarioId);
+    return agendamentos.any((a) => a.funcionario.id == funcionarioId);
   }
 
   Future<void> carregarFuncionarios() async {
-    final lista = await _funcionarioDAO.findAllFuncionarios();
+    final lista = await _funcionarioService.getFuncionarios();
 
     setState(() {
       funcionarios = lista;
@@ -54,7 +54,7 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
     }
 
     if (funcionarioEditando == null) {
-      await _funcionarioDAO.insertFuncionario(
+      await _funcionarioService.salvarFuncionario(
         Funcionario(
           nome: nomeController.text,
           email: emailController.text,
@@ -62,7 +62,7 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
         ),
       );
     } else {
-      await _funcionarioDAO.updateFuncionario(
+      await _funcionarioService.atualizarFuncionario(
         Funcionario(
           id: funcionarioEditando!.id,
           nome: nomeController.text,
@@ -90,9 +90,7 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
   }
 
   Future<void> excluirFuncionario(int id) async {
-    final agendamentos = await _agendamentoDAO.findAllAgendamentos();
-
-    final possuiAgendamento = agendamentos.any((a) => a.funcionarioId == id);
+    final possuiAgendamento = await funcionarioPossuiAgendamento(id);
 
     if (possuiAgendamento) {
       if (!mounted) return;
@@ -112,7 +110,7 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
       limparCampos();
     }
 
-    await _funcionarioDAO.deleteFuncionario(id);
+    await _funcionarioService.excluirFuncionario(id);
 
     await carregarFuncionarios();
   }
@@ -323,7 +321,7 @@ class _FuncionarioScreenState extends State<FuncionarioScreen> {
 
                               icon: const Icon(Icons.delete),
                               label: const Text('Excluir'),
-                            )
+                            ),
                           ],
                         ),
                       ],

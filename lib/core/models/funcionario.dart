@@ -20,7 +20,7 @@ class Funcionario {
       id: map['id'],
       nome: map['nome'],
       email: map['email'],
-      senha: map['senha'],
+      senha: map['senha'] ?? '',
     );
   }
 }

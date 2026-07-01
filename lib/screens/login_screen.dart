@@ -101,20 +101,35 @@ class LoginScreen extends StatelessWidget {
                       return;
                     }
 
-                    final Funcionario? funcionario = await AuthService().login(
-                      emailController.text.trim(),
-                      passwordController.text.trim(),
-                    );
-
-                    if (funcionario != null) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()),
+                    try {
+                      final bool sucesso = await AuthService().login(
+                        emailController.text.trim(),
+                        passwordController.text.trim(),
                       );
-                    } else {
+
+                      if (!context.mounted) return;
+
+                      if (sucesso) {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Email ou senha inválidos'),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      if (!context.mounted) return;
+
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Email ou senha inválidos'),
+                        SnackBar(
+                          content: Text(
+                            'Não foi possível conectar ao servidor. '
+                            'Verifique sua conexão e tente novamente.',
+                          ),
                         ),
                       );
                     }
